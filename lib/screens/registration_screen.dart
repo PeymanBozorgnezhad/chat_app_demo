@@ -21,6 +21,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool isLoading = false;
   File? _userImageFile;
 
+  // File? _userImageFile = File('-1');
+
   //todo : our formKey
   final _formKey = GlobalKey<FormState>();
 
@@ -131,7 +133,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         //Requires the user to enter at least 6 characters
         RegExp regExp = RegExp(r'^.{6,}$');
         if (value!.isEmpty) {
-          return ("Password is required to login");
+          return ("Password is required to SignUp");
         }
         if (!regExp.hasMatch(value)) {
           return ("Enter Valid Password\n(Min. 6 characters)");
@@ -176,7 +178,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         padding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
         minWidth: MediaQuery.of(context).size.width,
         onPressed: () => signUp(emailEditingController.text,
-            passwordEditingController.text, _userImageFile!),
+            passwordEditingController.text, _userImageFile),
         child: Text(
           'SignUp',
           textAlign: TextAlign.center,
@@ -273,9 +275,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  void signUp(String email, String password, File image) async {
+  void signUp(String email, String password, File? image) async {
     final isValid = _formKey.currentState!.validate();
-    if (_userImageFile == null) {
+    if (_userImageFile == null || image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please pick an image.'),
@@ -299,7 +301,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  void postDetailToFirestore(File image) async {
+  void postDetailToFirestore(File? image) async {
     //calling our Firestore
     //calling our user model
     //sending these values
@@ -319,8 +321,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         .ref()
         .child('user_image')
         .child(user.uid + '.jpg');
-    ref.putFile(image);
-
+    if (image != null) {
+      ref.putFile(image);
+    }
     Map<String, dynamic> newMap = userModel.toMap();
     await firebaseFirestore.collection('users').doc(user.uid).set(newMap).then(
           (_) => Fluttertoast.showToast(msg: "Account created successfully :)"),
