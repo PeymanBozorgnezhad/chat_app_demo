@@ -15,12 +15,15 @@ class _SearchScreenState extends State<SearchScreen> {
   TextEditingController searchTextEditingController = TextEditingController();
   DatabaseMethods databaseMethods = DatabaseMethods();
 
-  QuerySnapshot<Map<String, dynamic>>? searchSnapShot;
+  // QuerySnapshot<Map<String, dynamic>>? searchSnapShot;
+  dynamic searchSnapShot;
 
   // late QuerySnapshot<Map<String, dynamic>> searchSnapShot;
 
-  initiateSearch() async {
-    await databaseMethods
+  bool isShowSearchList = false;
+
+  initiateSearch() {
+    databaseMethods
         .getUserByUsername(searchTextEditingController.text)
         .then((value) {
       print('value : $value');
@@ -28,13 +31,14 @@ class _SearchScreenState extends State<SearchScreen> {
       //get rerender ui
       setState(() {
         searchSnapShot = value;
+        isShowSearchList = true;
       });
     }).catchError((e) {
       Fluttertoast.showToast(msg: e.toString());
     });
   }
 
-  /* Widget search() {
+  /*Widget search() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('users').snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -59,7 +63,7 @@ class _SearchScreenState extends State<SearchScreen> {
               },
             ).toList(),
           );
-        }//
+        } //
         else {
           return const Center(
             child: CircularProgressIndicator(),
@@ -107,52 +111,58 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
       body: Container(
         color: kBackgroundColorDecoration,
-        height: 100,
+        height: 170,
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: searchTextEditingController,
-                      style: const TextStyle(
-                        color: Colors.white,
-                      ),
-                      decoration:
-                          kTextFieldInputDecoration('Search Username...')
-                              .copyWith(
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      initiateSearch();
-                    },
-                    child: Container(
-                      height: 50,
-                      width: 50,
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0x36FFFFFF),
-                            Color(0x0FFFFFFF),
-                          ],
+            Expanded(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: searchTextEditingController,
+                        style: const TextStyle(
+                          color: Colors.white,
                         ),
-                        borderRadius: BorderRadius.circular(40),
-                      ),
-                      child: Image.asset(
-                        'assets/images/search.png',
+                        decoration:
+                            kTextFieldInputDecoration('Search Username...')
+                                .copyWith(
+                          border: InputBorder.none,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    GestureDetector(
+                      onTap: () {
+                        initiateSearch();
+                      },
+                      child: Container(
+                        height: 50,
+                        width: 50,
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0x36FFFFFF),
+                              Color(0x0FFFFFFF),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                        child: Image.asset(
+                          'assets/images/search_1.png',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            searchList(),
+            Visibility(
+              visible: isShowSearchList,
+              child: searchList(),
+            ),
           ],
         ),
       ),
