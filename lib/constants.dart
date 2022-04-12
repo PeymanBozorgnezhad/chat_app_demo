@@ -21,7 +21,8 @@ InputDecoration kTextFieldInputDecoration(String hintText) {
           borderSide: BorderSide(color: Colors.pink)));
 }
 
-const kBackgroundColorDecoration = Color(0x542F2929);
+// const kBackgroundColorDecoration = Color(0x542F2929);
+const kBackgroundColorDecoration = Color(0x8F972B97);
 
 const kTxtStyleSearchResult = TextStyle(
   color: Colors.white70,
