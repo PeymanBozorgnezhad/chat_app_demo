@@ -16,25 +16,39 @@ class _SearchScreenState extends State<SearchScreen> {
   DatabaseMethods databaseMethods = DatabaseMethods();
 
   // QuerySnapshot<Map<String, dynamic>>? searchSnapShot;
-  dynamic searchSnapShot;
-
   // late QuerySnapshot<Map<String, dynamic>> searchSnapShot;
+
+  dynamic searchSnapShot;
 
   bool isShowSearchList = false;
 
   initiateSearch() {
+    String searchText = searchTextEditingController.text;
     databaseMethods
         .getUserByUsername(searchTextEditingController.text)
         .then((value) {
       print('value : $value');
       print('value.docs[0].data() : ${value.docs[0].data()}');
-      //get rerender ui
+      //todo : get reRendered ui
       setState(() {
         searchSnapShot = value;
         isShowSearchList = true;
       });
     }).catchError((e) {
-      Fluttertoast.showToast(msg: e.toString());
+      print(e.toString());
+      /*Fluttertoast.showToast(
+          msg: 'No username or please enter a valid username');
+      Fluttertoast.showToast(msg: e.toString());*/
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Theme.of(context).errorColor,
+          content: const Text('No username or please enter a valid username'),
+        ),
+      );
+      setState(() {
+        isShowSearchList = false;
+      });
+
     });
   }
 
@@ -75,17 +89,19 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget searchList() {
     return searchSnapShot != null
-        ? ListView.builder(
-            shrinkWrap: true,
-            itemCount: searchSnapShot!.docs.length,
-            itemBuilder: (BuildContext context, int index) {
-              //data()===>>>field document===>>Map<String,dynamic> field
-              Map map = searchSnapShot!.docs[index].data();
-              return SearchTile(
-                userName: map['username'],
-                userEmail: map['email'],
-              );
-            },
+        ? Expanded(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: searchSnapShot!.docs.length,
+              itemBuilder: (BuildContext context, int index) {
+                //data()===>>>field document===>>Map<String,dynamic> field
+                Map map = searchSnapShot!.docs[index].data();
+                return SearchTile(
+                  userName: map['username'],
+                  userEmail: map['email'],
+                );
+              },
+            ),
           )
         : const Center(
             child: Text('Not Exist Documents'),
@@ -111,52 +127,56 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
       body: Container(
         color: kBackgroundColorDecoration,
-        height: 170,
+        height: double.infinity,
         child: Column(
           children: [
-            Expanded(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: searchTextEditingController,
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
-                        decoration:
-                            kTextFieldInputDecoration('Search Username...')
-                                .copyWith(
-                          border: InputBorder.none,
-                        ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: searchTextEditingController,
+                      style: const TextStyle(
+                        color: Colors.white,
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        initiateSearch();
+                      decoration:
+                          kTextFieldInputDecoration('Search Username...')
+                              .copyWith(
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) {
+                        if (value == "") {
+                          setState(() {
+                            isShowSearchList = false;
+                          });
+                        }
                       },
-                      child: Container(
-                        height: 50,
-                        width: 50,
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0x36FFFFFF),
-                              Color(0x0FFFFFFF),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(40),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      initiateSearch();
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 50,
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0x36FFFFFF),
+                            Color(0x0FFFFFFF),
+                          ],
                         ),
-                        child: Image.asset(
-                          'assets/images/search_1.png',
-                        ),
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      child: Image.asset(
+                        'assets/images/search_1.png',
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             Visibility(
@@ -207,8 +227,6 @@ class SearchTile extends StatelessWidget {
               style: kTxtStyleSearchResult,
             ),
             onPressed: () {},
-            /*avatar: Image.asset('assets/images/send.png',
-                    color: Colors.white, fit: BoxFit.contain),*/
           ),
         ],
       ),
