@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import '../constants.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -205,73 +206,80 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
         ),
       ),
-      body: isLoading
-          ? Container(
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            )
-          : Center(
-              child: SingleChildScrollView(
-                child: Container(
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(36.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            height: 250,
-                            child: Image.asset(
-                              'assets/images/sign_up.jpg',
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 45,
-                          ),
-                          UserImagePicker(
-                            imagePickFn: (File pickedImage) {
-                              _pickedImage(pickedImage);
-                            },
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          firstNameField,
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          lastNameField,
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          emailField,
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          passwordField,
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          confirmPasswordField,
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          signUpButton,
-                          const SizedBox(
-                            height: 15,
-                          ),
-                        ],
+      body: ModalProgressHUD(
+        progressIndicator: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.blueGrey,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(Colors.white),
+          ),
+        ),
+        inAsyncCall: isLoading,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Container(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(36.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 250,
+                        child: Image.asset(
+                          'assets/images/sign_up.jpg',
+                          fit: BoxFit.contain,
+                        ),
                       ),
-                    ),
+                      const SizedBox(
+                        height: 45,
+                      ),
+                      UserImagePicker(
+                        imagePickFn: (File pickedImage) {
+                          _pickedImage(pickedImage);
+                        },
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      firstNameField,
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      lastNameField,
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      emailField,
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      passwordField,
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      confirmPasswordField,
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      signUpButton,
+                      const SizedBox(
+                        height: 15,
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -288,17 +296,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
 
     if (isValid) {
+      setState(() {
+        isLoading = true;
+      });
       await _auth
           .createUserWithEmailAndPassword(email: email, password: password)
           .then((value) {
-        setState(() {
-          isLoading = true;
-        });
+        //resetValues();
         postDetailToFirestore(image);
       }).catchError((e) {
-        Fluttertoast.showToast(msg: e!.message);
+        resetValues();
+        print('sth went wrong');
+        Fluttertoast.showToast(msg: e.toString());
       });
     }
+  }
+
+  void resetValues() {
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void postDetailToFirestore(File? image) async {
@@ -311,26 +328,30 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     User? user = _auth.currentUser;
     UserModel userModel = UserModel();
 
+    String filename = image!.path.split('/').last;
+
+    TaskSnapshot taskSnapshot = await FirebaseStorage.instance
+        .ref()
+        .child('users/images/$filename')
+        .putFile(image);
+
+    String url = await taskSnapshot.ref.getDownloadURL();
+
     //writing all the values
     userModel.email = user!.email;
     userModel.uid = user.uid;
     userModel.username = firstNameEditingController.text;
     userModel.lastname = lastNameEditingController.text;
+    userModel.imageUrl = url;
 
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('user_image')
-        .child(user.uid + '.jpg');
-    if (image != null) {
-      ref.putFile(image);
-    }
     Map<String, dynamic> newMap = userModel.toMap();
     await firebaseFirestore.collection('users').doc(user.uid).set(newMap).then(
           (_) => Fluttertoast.showToast(msg: "Account created successfully :)"),
         );
-    Navigator.pushAndRemoveUntil(context,
-        MaterialPageRoute(builder: (BuildContext context) {
-      return const HomeScreen();
-    }), (route) => false);
+    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+      builder: (BuildContext context) {
+        return const HomeScreen();
+      },
+    ), (route) => false);
   }
 }
