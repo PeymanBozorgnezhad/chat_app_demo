@@ -19,7 +19,7 @@ class _UserImagePickerState extends State<UserImagePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    /*return Column(
       children: [
         CircleAvatar(
           radius: 40,
@@ -34,6 +34,54 @@ class _UserImagePickerState extends State<UserImagePicker> {
           ),
         ),
       ],
+    );*/
+    return Center(
+      child: (file.path == '-1')
+          ? Material(
+              // borderRadius: BorderRadius.circular(50),
+              shape: const CircleBorder(),
+              color: Colors.blue,
+              child: InkWell(
+                onTap: () {
+                  _selectImage();
+                },
+                borderRadius: BorderRadius.circular(50),
+                child: const CircleAvatar(
+                  backgroundColor: Colors.transparent,
+                  radius: 50,
+                  child: Icon(
+                    Icons.add_a_photo_sharp,
+                    size: 40,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            )
+          : Stack(
+              children: [
+                CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.transparent,
+                  backgroundImage: FileImage(file),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: GestureDetector(
+                    onTap: () {
+                      _selectImage();
+                    },
+                    child: const CircleAvatar(
+                      backgroundColor: Colors.blue,
+                      child: Icon(
+                        Icons.add_a_photo_sharp,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -68,7 +116,7 @@ class _UserImagePickerState extends State<UserImagePicker> {
     try {
       ImagePicker imagePicker = ImagePicker();
       final XFile pickedImage =
-          await imagePicker.pickImage(source: source) ?? XFile('-1');
+          await imagePicker.pickImage(source: source,imageQuality: 50,maxWidth: 150) ?? XFile('-1');
       print('---------------------------------------');
       print(pickedImage);
       print(pickedImage.path);
