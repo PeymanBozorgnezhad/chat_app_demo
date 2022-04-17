@@ -1,16 +1,16 @@
-import 'dart:io';
-
 class UserModel {
   String? uid;
   String? username;
   String? lastname;
   String? email;
+  String? imageUrl;
 
   UserModel({
     this.uid,
     this.username,
     this.lastname,
     this.email,
+    this.imageUrl,
   });
 
   //receiving data from server side
@@ -19,8 +19,14 @@ class UserModel {
     final username = map['username'];
     final lastname = map['lastname'];
     final email = map['email'];
+    final imageUrl = map['imageUrl'];
     return UserModel(
-        uid: uid, username: username, lastname: lastname, email: email);
+      uid: uid,
+      username: username,
+      lastname: lastname,
+      email: email,
+      imageUrl: imageUrl,
+    );
   }
 
   //sending data to server side
@@ -32,6 +38,7 @@ class UserModel {
       'username': username,
       'lastname': lastname,
       'email': email,
+      'imageUrl': imageUrl,
     };
   }
 }
