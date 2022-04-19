@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chat_app/constants_function.dart';
 import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/screens/home_screen.dart';
 import 'package:chat_app/widgets/user_image_picker.dart';
@@ -348,10 +349,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     await firebaseFirestore.collection('users').doc(user.uid).set(newMap).then(
           (_) => Fluttertoast.showToast(msg: "Account created successfully :)"),
         );
-    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
-      builder: (BuildContext context) {
-        return const HomeScreen();
-      },
-    ), (route) => false);
+    kNavigator(context, 'signup-chatroom');
   }
 }
