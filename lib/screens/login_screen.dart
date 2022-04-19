@@ -1,4 +1,5 @@
 import 'package:chat_app/constants.dart';
+import 'package:chat_app/constants_function.dart';
 import 'package:chat_app/screens/home_screen.dart';
 import 'package:chat_app/screens/registration_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -175,8 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             ' SignUp',
                             style: kTextStyle.copyWith(
-                                fontSize: 15,
-                                color: Colors.redAccent),
+                                fontSize: 15, color: Colors.redAccent),
                           ),
                         ),
                       ],
@@ -202,12 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
           //Wait for the value to return to be completed and after receiving the result we can use it and perform the next operation
           print('user uid : ${uid.user!.uid}');
           Fluttertoast.showToast(msg: "Login Successful");
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (BuildContext context) => const HomeScreen(),
-            ),
-          );
+          kNavigator(context, 'login-chatroom');
         },
       ).catchError((e) {
         Fluttertoast.showToast(msg: e!.message);
