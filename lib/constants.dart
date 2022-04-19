@@ -29,3 +29,5 @@ const kTxtStyleSearchResult = TextStyle(
   fontSize: 15,
   fontWeight: FontWeight.w400,
 );
+
+const kTextStyleDrawer = TextStyle(color: Colors.black87);
