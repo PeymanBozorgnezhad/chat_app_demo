@@ -1,5 +1,8 @@
-import 'package:chat_app/screens/search_screen.dart';
+import 'package:chat_app/constants_function.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../model/user_model.dart';
+import '../widgets/custom_drawer.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   const ChatRoomScreen({Key? key}) : super(key: key);
@@ -9,29 +12,24 @@ class ChatRoomScreen extends StatefulWidget {
 }
 
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
+  FirebaseAuth auth = FirebaseAuth.instance;
+  User? user = FirebaseAuth.instance.currentUser;
+  UserModel loggedInUser = UserModel();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: CustomDrawer(
+          auth: auth, user: user, userModel: loggedInUser),
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back_sharp,
-            color: Colors.redAccent,
-          ),
+        title: const Text(
+          'Chat Room',
         ),
+        centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (BuildContext context) => const SearchScreen(),
-            ),
-          );
-        },
+        heroTag: 'unique_key',
+        onPressed: () => kNavigator(context, 'contact'),
         child: const Icon(
           Icons.search,
         ),
