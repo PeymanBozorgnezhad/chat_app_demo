@@ -1,8 +1,7 @@
 import 'package:chat_app/constants.dart';
 import 'package:chat_app/services/database.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -48,7 +47,6 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         isShowSearchList = false;
       });
-
     });
   }
 
@@ -188,6 +186,7 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
+
 }
 
 class SearchTile extends StatelessWidget {

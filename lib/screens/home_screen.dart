@@ -2,60 +2,29 @@ import 'package:chat_app/constants.dart';
 import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/screens/chat_room_screen.dart';
 import 'package:chat_app/screens/login_screen.dart';
+import 'package:chat_app/widgets/custom_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class HomeScreen extends StatelessWidget {
+  HomeScreen({Key? key}) : super(key: key);
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
+  FirebaseAuth auth = FirebaseAuth.instance;
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(user!.uid)
-        .get()
-        .then((value) {
-      loggedInUser = UserModel.fromMap(value.data());
-      setState(() {});
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: CustomDrawer(auth: auth, user: user, userModel: loggedInUser),
       appBar: AppBar(
         title: const Text(
           'Welcome',
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (BuildContext context)=>const ChatRoomScreen(),
-                ),
-              );
-            },
-            icon: CircleAvatar(
-              child: Image.asset('assets/images/hiring.png'),
-            ),
-          ),
-        ],
       ),
-      body: Center(
+      /*body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -106,17 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Future<void> logOut(BuildContext context) async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (BuildContext context) => const LoginScreen(),
-      ),
+      ),*/
     );
   }
 }
