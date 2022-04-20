@@ -1,4 +1,6 @@
+import 'package:chat_app/constants.dart';
 import 'package:chat_app/constants_function.dart';
+import 'package:chat_app/helper/util_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../model/user_model.dart';
@@ -17,10 +19,22 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   UserModel loggedInUser = UserModel();
 
   @override
+  void initState() {
+    // TODO: implement initState
+    getUserInfo();
+    super.initState();
+  }
+
+  getUserInfo() async {
+    setState(() {
+    });
+    kMyName = await UtilFunctions.getUserNameSharedPref();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: CustomDrawer(
-          auth: auth, user: user, userModel: loggedInUser),
+      drawer: CustomDrawer(auth: auth, user: user, userModel: loggedInUser),
       appBar: AppBar(
         title: const Text(
           'Chat Room',
@@ -29,7 +43,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'unique_key',
-        onPressed: () => kNavigator(context, 'contact'),
+        onPressed: () => kNavigator(context, 'contact','-1'),
         child: const Icon(
           Icons.search,
         ),
