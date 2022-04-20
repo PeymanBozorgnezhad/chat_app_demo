@@ -13,12 +13,14 @@ const kTextStyle =
 
 InputDecoration kTextFieldInputDecoration(String hintText) {
   return InputDecoration(
-      hintText: hintText,
-      hintStyle: const TextStyle(color: Colors.white54),
-      /* focusedBorder: const UnderlineInputBorder(
+    hintText: hintText,
+    hintStyle: const TextStyle(color: Colors.white54),
+    /* focusedBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.black54)),*/
-      enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.pink)));
+    enabledBorder: const UnderlineInputBorder(
+      borderSide: BorderSide(color: Colors.pink),
+    ),
+  );
 }
 
 // const kBackgroundColorDecoration = Color(0x542F2929);
@@ -31,3 +33,4 @@ const kTxtStyleSearchResult = TextStyle(
 );
 
 const kTextStyleDrawer = TextStyle(color: Colors.black87);
+String kMyName = "";
