@@ -40,11 +40,19 @@ class DatabaseMethods {
     });
   }
 
-  getConversationMessage({required String chatRoomId}) {
-    return FirebaseFirestore.instance
+  Future<QuerySnapshot<Map<String, dynamic>>> getConversationMessage(
+      {required String chatRoomId}) async {
+    return await FirebaseFirestore.instance
         .collection('ChatRoom')
         .doc(chatRoomId)
         .collection('chats')
+        .get();
+  }
+
+  Stream getChatRooms(String userName) {
+    return FirebaseFirestore.instance
+        .collection('ChatRoom')
+        .where('users', arrayContains: userName)
         .snapshots();
   }
 }
