@@ -34,3 +34,4 @@ const kTxtStyleSearchResult = TextStyle(
 
 const kTextStyleDrawer = TextStyle(color: Colors.black87);
 String kMyName = "";
+const kThemeSenderColor =Color.fromARGB(255, 225, 255, 199);

@@ -1,10 +1,14 @@
 import 'package:chat_app/constants.dart';
 import 'package:chat_app/constants_function.dart';
-import 'package:chat_app/screens/home_screen.dart';
 import 'package:chat_app/screens/registration_screen.dart';
+import 'package:chat_app/services/database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+
+import '../helper/util_functions.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -14,6 +18,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  User? user = FirebaseAuth.instance.currentUser;
+  bool isLoading = false;
+  DatabaseMethods databaseMethods = DatabaseMethods();
+  late QuerySnapshot<Map<String, dynamic>> snapShotUserInfo;
+
+  // QuerySnapshot<Map<String, dynamic>>? snapShotUserInfo;
+  // late QuerySnapshot<Map<String, dynamic>> searchSnapShot;
+
   //todo : form key
   final _formKey = GlobalKey<FormState>();
 
@@ -39,6 +51,12 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
     emailController = TextEditingController();
     passwordController = TextEditingController();
+    if (user != null) {
+      Future.delayed(
+        const Duration(milliseconds: 500),
+        () => kNavigator(context, 'login-chatroom','-1'),
+      );
+    }
   }
 
   @override
@@ -125,63 +143,76 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Container(
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(36.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: 250,
-                      child: Image.asset(
-                        'assets/images/sign_in.jpg',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 45,
-                    ),
-                    emailField,
-                    const SizedBox(
-                      height: 25,
-                    ),
-                    passwordField,
-                    const SizedBox(
-                      height: 35,
-                    ),
-                    loginButton,
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('Don\'t have an account?'),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    const RegistrationScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            ' SignUp',
-                            style: kTextStyle.copyWith(
-                                fontSize: 15, color: Colors.redAccent),
-                          ),
+      body: ModalProgressHUD(
+        progressIndicator: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.blueGrey,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(Colors.white),
+          ),
+        ),
+        inAsyncCall: isLoading,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Container(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(36.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 250,
+                        child: Image.asset(
+                          'assets/images/sign_in.jpg',
+                          fit: BoxFit.contain,
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(
+                        height: 45,
+                      ),
+                      emailField,
+                      const SizedBox(
+                        height: 25,
+                      ),
+                      passwordField,
+                      const SizedBox(
+                        height: 35,
+                      ),
+                      loginButton,
+                      const SizedBox(
+                        height: 15,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Don\'t have an account?'),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      const RegistrationScreen(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              ' SignUp',
+                              style: kTextStyle.copyWith(
+                                  fontSize: 15, color: Colors.redAccent),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -193,7 +224,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
   //todo : login function
   void signIn(String email, String password) async {
-    if (_formKey.currentState!.validate()) {
+    final isValid = _formKey.currentState!.validate();
+
+    if (isValid) {
+      UtilFunctions.saveEmailSharedPref(email);
+
+      setState(() {
+        isLoading = true;
+      });
+      // UtilFunctions.saveUserNameSharedPref(username);===>>not access
+      //In the login section, because we do not have access to the username,
+      // and since our login operation is based on email and password,
+      // to save the name in the local database,
+      // we must run a query to firestore based on the email we have,
+      // and after the email with The previously registered email matched (when it goes into the then function if the desired blindness is correct)
+      // it must then store the resulting username in the local database, which returns a value that is QuerySnapShot.
+      //TODO ==>> function get user detail==>>same is name
+      databaseMethods.getUserByEmail(email).then((value) {
+        snapShotUserInfo = value;
+        Map<String, dynamic> docSnap = snapShotUserInfo.docs[0].data();
+        UtilFunctions.saveUserNameSharedPref(docSnap['username']).then((value) {
+          if (value == true) {
+        print('#############################################');
+            print('saved username in sharedPref');
+          }
+        });
+      });
+
       await _auth
           .signInWithEmailAndPassword(email: email, password: password)
           .then(
@@ -202,9 +259,11 @@ class _LoginScreenState extends State<LoginScreen> {
           //Wait for the value to return to be completed and after receiving the result we can use it and perform the next operation
           print('user uid : ${uid.user!.uid}');
           Fluttertoast.showToast(msg: "Login Successful");
-          kNavigator(context, 'login-chatroom');
+          UtilFunctions.saveUserLoggedInSharedPref(true);
+          kNavigator(context, 'login-chatroom','-1');
         },
       ).catchError((e) {
+        resetValues();
         Fluttertoast.showToast(msg: e!.message);
       });
 
@@ -214,5 +273,11 @@ class _LoginScreenState extends State<LoginScreen> {
       print(userCredential.credential);
       print(_auth.currentUser);*/
     }
+  }
+
+  void resetValues() {
+    setState(() {
+      isLoading = false;
+    });
   }
 }

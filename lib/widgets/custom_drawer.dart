@@ -110,7 +110,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           FontAwesomeIcons.addressBook,
                           color: Colors.white,
                         ),
-                        onTap: () => kNavigator(context, 'contact'),
+                        onTap: () => kNavigator(context, 'contact','-1'),
                       ),
                       const Divider(
                         color: Colors.white60,
@@ -124,7 +124,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         ),
                         onTap: () async {
                           await widget.auth!.signOut();
-                          kNavigator(context, 'sign-out');
+                          kNavigator(context, 'sign-out','-1');
                         },
                       ),
                     ],

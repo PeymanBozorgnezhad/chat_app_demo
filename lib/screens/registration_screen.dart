@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:chat_app/constants_function.dart';
+import 'package:chat_app/helper/util_functions.dart';
 import 'package:chat_app/model/user_model.dart';
 import 'package:chat_app/screens/home_screen.dart';
 import 'package:chat_app/widgets/user_image_picker.dart';
@@ -179,8 +180,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       child: MaterialButton(
         padding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
         minWidth: MediaQuery.of(context).size.width,
-        onPressed: () => signUp(emailEditingController.text,
-            passwordEditingController.text, _userImageFile),
+        onPressed: () => signUp(
+            emailEditingController.text,
+            firstNameEditingController.text,
+            passwordEditingController.text,
+            _userImageFile),
         child: Text(
           'SignUp',
           textAlign: TextAlign.center,
@@ -284,7 +288,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  void signUp(String email, String password, File? image) async {
+  void signUp(
+      String email, String username, String password, File? image) async {
     final isValid = _formKey.currentState!.validate();
     if (_userImageFile == null || image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -297,6 +302,30 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
 
     if (isValid) {
+      UtilFunctions.saveUserNameSharedPref(username).then(
+        (value) {
+          if (value == true) {
+            print('#############################################');
+            print(value);
+            print('saved username in sharedPref successfully');
+          }
+        },
+      ).catchError(
+        (e) => print(e.toString()),
+      );
+
+      UtilFunctions.saveEmailSharedPref(email).then(
+        (value) {
+          if (value == true) {
+            print('**********************************');
+            print(value);
+            print('saved email in sharedPref successfully');
+          }
+        },
+      ).catchError(
+        (e) => print(e.toString()),
+      );
+
       setState(() {
         isLoading = true;
       });
@@ -305,6 +334,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           .then((value) {
         //resetValues();
         postDetailToFirestore(image);
+        UtilFunctions.saveUserLoggedInSharedPref(true);
       }).catchError((e) {
         resetValues();
         print('sth went wrong');
@@ -349,6 +379,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     await firebaseFirestore.collection('users').doc(user.uid).set(newMap).then(
           (_) => Fluttertoast.showToast(msg: "Account created successfully :)"),
         );
-    kNavigator(context, 'signup-chatroom');
+    kNavigator(context, 'signup-chatroom','-1');
   }
 }
