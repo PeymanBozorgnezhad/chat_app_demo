@@ -1,7 +1,7 @@
 import 'package:chat_app/constants.dart';
+import 'package:chat_app/constants_function.dart';
 import 'package:chat_app/services/database.dart';
 import 'package:flutter/material.dart';
-
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -11,11 +11,8 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  TextEditingController searchTextEditingController = TextEditingController();
   DatabaseMethods databaseMethods = DatabaseMethods();
-
-  // QuerySnapshot<Map<String, dynamic>>? searchSnapShot;
-  // late QuerySnapshot<Map<String, dynamic>> searchSnapShot;
+  TextEditingController searchTextEditingController = TextEditingController();
 
   dynamic searchSnapShot;
 
@@ -50,41 +47,6 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
-  /*Widget search() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('users').snapshots(),
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(
-            child: Text('Not Exist Documents'),
-          );
-        }
-        if (snapshot.hasData) {
-          print('snapshot : $snapshot');
-          print('snapshot.data : ${snapshot.data}');
-          // print('snapshot.data.docs : ${snapshot.data.docs}');
-          final temp = snapshot.data;
-          print(temp!.docs[0].data());
-
-          return ListView(
-            children: temp.docs.map(
-              (doc) {
-                Map map = doc.data() as Map;
-                return SearchTile(
-                    userName: map['username'], userEmail: map['email']);
-              },
-            ).toList(),
-          );
-        } //
-        else {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-      },
-    );
-  }*/
-
   Widget searchList() {
     return searchSnapShot != null
         ? Expanded(
@@ -104,6 +66,64 @@ class _SearchScreenState extends State<SearchScreen> {
         : const Center(
             child: Text('Not Exist Documents'),
           );
+  }
+
+  createChatRoomAndStartConversation({required String userName}) async {
+    if (userName != kMyName) {
+      String chatRoomId = getChatRoomId(userName, kMyName);
+      List<String> users = [userName, kMyName];
+      Map<String, dynamic> chatRoomMap = {
+        'chatroomId': chatRoomId,
+        'users': users,
+      };
+      databaseMethods.createChatRoom(
+          chatRoomId: chatRoomId, charRoomMap: chatRoomMap);
+      kNavigator(context, 'conversation', chatRoomId);
+    } //
+    else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Theme.of(context).errorColor,
+          content: const Text('you can\'t send message to yourself'),
+        ),
+      );
+      return;
+    }
+  }
+
+  Widget SearchTile({required String userName, required String userEmail}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Row(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                userName,
+                style: kTxtStyleSearchResult,
+              ),
+              Text(
+                userEmail,
+                style: kTxtStyleSearchResult,
+              ),
+            ],
+          ),
+          const Spacer(),
+          ActionChip(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            backgroundColor: Colors.blue,
+            label: const Text(
+              'Message',
+              style: kTxtStyleSearchResult,
+            ),
+            onPressed: () {
+              createChatRoomAndStartConversation(userName: userName);
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -186,49 +206,14 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-
 }
 
-class SearchTile extends StatelessWidget {
-  final String userName;
-  final String userEmail;
-
-  SearchTile({
-    required this.userName,
-    required this.userEmail,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                userName,
-                style: kTxtStyleSearchResult,
-              ),
-              Text(
-                userEmail,
-                style: kTxtStyleSearchResult,
-              ),
-            ],
-          ),
-          const Spacer(),
-          ActionChip(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            backgroundColor: Colors.blue,
-            label: const Text(
-              'Message',
-              style: kTxtStyleSearchResult,
-            ),
-            onPressed: () {},
-          ),
-        ],
-      ),
-    );
+//todo ===>> generate unique id
+String getChatRoomId(String a, String b) {
+  if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
+    return "$b\_$a";
+  } //
+  else {
+    return "$a\_$b";
   }
 }
